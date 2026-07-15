@@ -48,6 +48,9 @@ final class ReminderOverlayController: NSObject {
     /// Called once when the overlay has fully finished (walked off or dismissed).
     var onFinished: (() -> Void)?
 
+    /// Called when the cat itself is clicked (counts as a glass of water).
+    var onCatClicked: (() -> Void)?
+
     /// Testing hook: force the entry edge. `nil` (the default) picks randomly.
     var forcedSideLeft: Bool?
 
@@ -125,7 +128,10 @@ final class ReminderOverlayController: NSObject {
         let sprite = SpriteView()
         sprite.frame = NSRect(x: offScreenX, y: catBottomInset, width: catSize, height: catSize)
         sprite.facingRight = entryFacingRight
-        sprite.onClick = { [weak self] in self?.dismissImmediately() }
+        sprite.onClick = { [weak self] in
+            self?.onCatClicked?()
+            self?.dismissImmediately()
+        }
         sprite.play(sheet: walkSheet, fps: walkFPS)
         content.addSubview(sprite)
 

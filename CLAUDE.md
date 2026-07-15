@@ -3,7 +3,9 @@
 A native macOS **menu bar** app (Swift) that reminds you to drink water. When a
 reminder fires, a **pixel-art cat** walks in from a randomly chosen screen edge
 (left or right), shows a cloud-style pixel speech bubble with a short hydration
-message, waits, then turns around and walks back off.
+message, waits, then turns around and walks back off. Clicking the cat counts as
+a glass of water; the menu shows today's tally. Settings live in a SwiftUI
+Preferences window.
 
 ## Hard constraint: Swift Package Manager only, no Xcode
 
@@ -40,19 +42,38 @@ to wait for the timer). Running in the foreground also surfaces `NSLog` output.
 ./Puddles.app/Contents/MacOS/Puddles --demo         # random entry edge
 ./Puddles.app/Contents/MacOS/Puddles --demo-left    # force entry from the left
 ./Puddles.app/Contents/MacOS/Puddles --demo-right   # force entry from the right
+./Puddles.app/Contents/MacOS/Puddles --prefs        # open Preferences on launch
 ```
 
 The `--demo-left/right` flags force the entry edge (handy for verifying the
 sprite flip and tail aiming); normal timer-driven reminders still pick randomly.
+`--prefs` opens the Preferences window right away for quick inspection.
+
+Settings persist in `UserDefaults` (domain `com.puddles.app`), so tests can
+seed/read them, e.g. `defaults read com.puddles.app`.
 
 ## Source layout (`Sources/Puddles/`)
 
 - `main.swift` — entry point; `.accessory` activation policy (belt-and-suspenders
   with `LSUIElement`).
-- `AppDelegate.swift` — status item + menu ("Remind me now", "Preferences…"
-  stub, "Quit"), the repeating reminder timer (default **60 min**), and
-  `fireReminder()` which logs and shows the overlay. Honors the `--demo`,
-  `--demo-left`, `--demo-right` flags.
+- `AppDelegate.swift` — status item + menu (today's glass count, "Remind me
+  now", "Preferences…", "Quit"), the repeating reminder timer (interval from
+  `Preferences`, default **60 min**), and `fireReminder()` which logs, plays the
+  sound (if enabled), and shows the overlay. Scheduled ticks are gated by active
+  hours (`reminderTick`); "Remind me now" always fires. A Combine subscription
+  reschedules the timer live when the interval changes. Opens the SwiftUI
+  Preferences window in an `NSHostingController`/`NSWindow`. Honors `--demo`,
+  `--demo-left`, `--demo-right`, `--prefs`.
+- `Preferences.swift` — `ObservableObject` settings store persisted in
+  `UserDefaults`: reminder interval, active-hours start/end (minutes since
+  midnight), sound toggle, and launch-at-login via **`SMAppService.mainApp`**
+  (the service's status is the source of truth). `isWithinActiveHours(_:)`
+  handles overnight windows.
+- `PreferencesView.swift` — SwiftUI grouped `Form`: interval slider (15 min–3
+  hr), active-hours `DatePicker`s, sound and launch-at-login toggles. Observes
+  `Preferences.shared`, so edits persist and apply live.
+- `HydrationTracker.swift` — `ObservableObject` counting today's glasses (one
+  per cat click), persisted and auto-reset when the calendar day changes.
 - `ReminderOverlayController.swift` — owns one overlay: a borderless,
   transparent, always-on-top, **non-activating** `NSPanel` flush to a randomly
   chosen left/right edge, at a random vertical position (avoiding top/bottom
@@ -97,11 +118,17 @@ sprite flip and tail aiming); normal timer-driven reminders still pick randomly.
   tail aiming; randomized hydration messages; manual-timer slide (fixed a
   walk-back teleport bug); custom bitmap `PixelFont`; compact cloud-style pixel
   speech bubble.
+- **Phase 4 (done):** SwiftUI Preferences window — reminder-interval slider,
+  active-hours pickers (reminders gated to that window), sound toggle (soft
+  sound on appearance), launch-at-login via `SMAppService`. Settings persist in
+  `UserDefaults` and apply live (interval change reschedules the timer). Glass
+  counter: clicking the cat counts as a glass; the menu shows
+  "Today: N glasses 💧", resetting at midnight.
 
 ## What's next
 
-- Preferences window (currently a stub): make the reminder interval
-  configurable.
+- No committed next milestone. Possible directions: snooze on "Remind me now",
+  richer counter stats/history, or a daily goal.
 
 ## Conventions / gotchas
 
@@ -113,5 +140,12 @@ sprite flip and tail aiming); normal timer-driven reminders still pick randomly.
 - The transparent overlay panel captures clicks over its full frame while
   visible (~10s) — acceptable for now; tighten the window or add click-through
   in empty regions later.
+- Launch-at-login uses `SMAppService.mainApp`; its status is the source of
+  truth (not `UserDefaults`). Don't toggle it in automated tests — it really
+  registers a login item on the machine. For it to persist, the launched
+  `Puddles.app` should live at a stable path (e.g. `/Applications`).
+- Simulating the cat click in tests needs synthetic events + Accessibility
+  permission (not available here). Verify the counter via its `UserDefaults`
+  round-trip (`hydration.count` / `hydration.day`) instead.
 - Build artifacts (`.build/`, generated `Puddles.app/`) are git-ignored; commit
   source only. Real art in `Resources/` **is** committed.
