@@ -51,7 +51,7 @@ Xcode install.
 xcode-select --install
 
 # Clone and build
-git clone https://github.com/YOUR_USERNAME/Puddles.git
+git clone https://github.com/sasiiiiindu/Puddles.git
 cd Puddles
 ./build.sh
 

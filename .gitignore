@@ -23,3 +23,6 @@ Puddles.app/
 # Release artifacts (produced by release.sh)
 dist/
 *.dmg
+
+# Local Claude Code notes (not published)
+CLAUDE.md
