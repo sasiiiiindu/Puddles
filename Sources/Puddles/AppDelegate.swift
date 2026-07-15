@@ -17,7 +17,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupStatusItem()
         startReminderTimer()
-        NSLog("Puddles launched. Reminder interval: \(prefs.reminderIntervalMinutes) min.")
 
         // Reschedule the timer whenever the interval preference changes.
         prefs.$reminderIntervalMinutes
@@ -156,21 +155,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         ) { [weak self] _ in
             self?.reminderTick()
         }
-        NSLog("Puddles: reminder timer set to \(prefs.reminderIntervalMinutes) min.")
     }
 
     /// A scheduled tick: only nudge the user if we're inside active hours.
     private func reminderTick() {
-        guard prefs.isWithinActiveHours(Date()) else {
-            NSLog("Puddles: outside active hours, skipping reminder.")
-            return
-        }
+        guard prefs.isWithinActiveHours(Date()) else { return }
         fireReminder()
     }
 
     private func fireReminder() {
-        NSLog("💧 Puddles: time to drink some water! 🐱")
-
         if prefs.soundEnabled {
             NSSound(named: "Pop")?.play()
         }

@@ -58,7 +58,7 @@ cat > "$CONTENTS/Info.plist" <<PLIST
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSHumanReadableCopyright</key>
-    <string>Puddles</string>
+    <string>© 2026 Sasindu Janapriya. MIT Licensed.</string>
 </dict>
 </plist>
 PLIST

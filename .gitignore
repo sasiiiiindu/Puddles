@@ -1,4 +1,18 @@
-# Swift Package Manager build output
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Xcode / build output
+build/
+DerivedData/
+*.xcuserstate
+*.xcscmblueprint
+xcuserdata/
+
+# Swift Package Manager
 .build/
 .swiftpm/
 Package.resolved
@@ -6,5 +20,6 @@ Package.resolved
 # Assembled app bundle (produced by build.sh)
 Puddles.app/
 
-# macOS
-.DS_Store
+# Release artifacts (produced by release.sh)
+dist/
+*.dmg
