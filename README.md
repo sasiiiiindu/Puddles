@@ -2,7 +2,6 @@
 
 A pixel-art cat that reminds you to drink water, living quietly in your macOS menu bar.
 
-<!-- Replace docs/demo.gif with a real screen recording before release. -->
 <p align="center">
   <img src="docs/demo.gif" alt="Puddles demo — a pixel cat walks in with a speech bubble" width="480">
 </p>

@@ -33,17 +33,17 @@ MSG
 fi
 
 # --- Build ------------------------------------------------------------------
-echo "==> Building $APP_NAME.app…"
+echo "==> Building $APP_NAME.app..."
 ./build.sh
 
 # --- Stage ------------------------------------------------------------------
-echo "==> Staging for packaging…"
+echo "==> Staging for packaging..."
 rm -rf "$DIST_DIR"
 mkdir -p "$STAGING_DIR"
 cp -R "$SCRIPT_DIR/$APP_NAME.app" "$STAGING_DIR/"
 
 # --- Package DMG ------------------------------------------------------------
-echo "==> Creating $DMG_NAME…"
+echo "==> Creating $DMG_NAME..."
 create-dmg \
     --volname "$APP_NAME" \
     --window-pos 200 120 \
