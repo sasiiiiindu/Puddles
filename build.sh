@@ -26,6 +26,12 @@ mkdir -p "$CONTENTS/Resources"
 
 cp "$BIN_PATH/$APP_NAME" "$MACOS/$APP_NAME"
 
+# Copy sprite sheets and any other bundled assets into Contents/Resources.
+if [ -d "$SCRIPT_DIR/Resources" ]; then
+    echo "==> Copying Resources…"
+    cp -R "$SCRIPT_DIR/Resources/." "$CONTENTS/Resources/"
+fi
+
 cat > "$CONTENTS/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

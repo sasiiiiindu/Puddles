@@ -14,9 +14,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         startReminderTimer()
         NSLog("Puddles launched. Reminder interval: \(Int(reminderInterval / 60)) min.")
 
-        // Dev affordance: `--demo` fires a reminder shortly after launch so the
-        // overlay animation can be exercised without waiting for the timer.
-        if CommandLine.arguments.contains("--demo") {
+        // Dev affordance: `--demo` (optionally `--demo-left` / `--demo-right`)
+        // fires a reminder shortly after launch so the overlay animation can be
+        // exercised without waiting for the timer.
+        let demoFlags: Set<String> = ["--demo", "--demo-left", "--demo-right"]
+        if !demoFlags.isDisjoint(with: CommandLine.arguments) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
                 self?.fireReminder()
             }
@@ -119,7 +121,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Only one overlay at a time — replace any that's currently on screen.
         overlay?.dismissImmediately()
 
-        let controller = ReminderOverlayController(message: "Time for water! 💧")
+        let controller = ReminderOverlayController()
+        // Testing hooks: --demo-left / --demo-right force the entry edge.
+        if CommandLine.arguments.contains("--demo-left") {
+            controller.forcedSideLeft = true
+        } else if CommandLine.arguments.contains("--demo-right") {
+            controller.forcedSideLeft = false
+        }
         controller.onFinished = { [weak self] in self?.overlay = nil }
         overlay = controller
         controller.show()

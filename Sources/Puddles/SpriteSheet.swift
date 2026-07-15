@@ -25,8 +25,17 @@ final class SpriteSheet {
         self.frames = sliced
     }
 
-    /// A placeholder sheet generated in memory — swap in real art later by
-    /// loading a real PNG with the same `SpriteSheet(pngData:frameCount:)` init.
+    /// Load a PNG sheet bundled in `Contents/Resources/` (via build.sh).
+    /// Returns nil if the resource is missing or can't be decoded, so callers
+    /// can fall back to the placeholder.
+    static func fromResource(named name: String, frameCount: Int) -> SpriteSheet? {
+        guard let url = Bundle.main.url(forResource: name, withExtension: "png"),
+              let data = try? Data(contentsOf: url) else { return nil }
+        return SpriteSheet(pngData: data, frameCount: frameCount)
+    }
+
+    /// A placeholder sheet generated in memory — used as a fallback when real
+    /// art can't be loaded.
     static func placeholder(frameCount: Int, frameSize: Int) -> SpriteSheet {
         let data = PlaceholderSprite.makeSheetPNG(frameCount: frameCount, frameSize: frameSize)
         return SpriteSheet(pngData: data, frameCount: frameCount)!
