@@ -1,0 +1,10 @@
+# Swift Package Manager build output
+.build/
+.swiftpm/
+Package.resolved
+
+# Assembled app bundle (produced by build.sh)
+Puddles.app/
+
+# macOS
+.DS_Store
