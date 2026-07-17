@@ -1,13 +1,13 @@
 #!/bin/bash
 # Build Puddles and package it into a drag-to-Applications DMG.
 #
-# Usage: ./release.sh [version]     e.g. ./release.sh 1.0
+# Usage: ./release.sh [version]     e.g. ./release.sh 2.0.0
 #
 # Requires the free `create-dmg` tool (https://github.com/create-dmg/create-dmg).
 set -euo pipefail
 
 APP_NAME="Puddles"
-VERSION="${1:-1.0}"
+VERSION="${1:-2.0.0}"
 DMG_NAME="${APP_NAME}-${VERSION}.dmg"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
