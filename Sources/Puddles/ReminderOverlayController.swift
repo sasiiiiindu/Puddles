@@ -7,8 +7,9 @@ import AppKit
 /// Choreography:
 ///   1. Cat starts off-screen at a randomly chosen (left/right) edge and walks
 ///      in over ~1.5s, playing `walk.png` and facing its direction of travel.
-///   2. It stops, switches to `idle.png` (slow blink), and a speech bubble with
-///      a random hydration message pops in above it.
+///   2. On arrival it does two quick springy hops in place, then switches to
+///      `idle.png` (slow blink) and a speech bubble with a random hydration
+///      message pops in above it.
 ///   3. After 8 seconds it turns around, plays `walk.png` (flipped), and walks
 ///      off the same edge (~1.5s).
 ///   4. The panel closes.
@@ -67,6 +68,16 @@ final class ReminderOverlayController: NSObject {
     private let restInset: CGFloat = 90 // gap from the entry edge when resting
 
     private let walkDuration: TimeInterval = 1.5
+
+    // Arrival hop: two quick springy hops in place before the bubble appears.
+    private let hopHeight: CGFloat = 8         // points off the ground at the peak
+    private let hopRise: TimeInterval = 0.20   // ease-out up
+    private let hopFall: TimeInterval = 0.15   // ease-in down, slightly faster → springy
+    private let hopPause: TimeInterval = 0.10  // grounded beat between the two hops
+
+    // Idle blink: eyes open long, blink brief.
+    private let idleOpenDuration: TimeInterval = 2.5
+    private let idleClosedDuration: TimeInterval = 0.2
 
     private var walkFPS: Double { character.walkFPS }
     private var idleFPS: Double { character.idleFPS }
@@ -194,6 +205,67 @@ final class ReminderOverlayController: NSObject {
         }
     }
 
+    /// Animates `view`'s vertical position from `fromY` to `toY` over `duration`
+    /// with a custom easing curve, driven by the same 60fps timer as `slide`
+    /// (so dismissal/click cleanly cancels it). X is held constant.
+    private func animateY(_ view: NSView, fromY: CGFloat, toY: CGFloat,
+                          duration: TimeInterval, ease: @escaping (Double) -> Double,
+                          completion: @escaping () -> Void) {
+        slideTimer?.invalidate()
+        let start = Date()
+        slideTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { [weak self, weak view] timer in
+            guard let self, let view else { timer.invalidate(); return }
+            let progress = min(1, Date().timeIntervalSince(start) / duration)
+            let y = fromY + (toY - fromY) * CGFloat(ease(progress))
+            view.setFrameOrigin(NSPoint(x: view.frame.origin.x, y: y))
+            if progress >= 1 {
+                timer.invalidate()
+                if self.slideTimer === timer { self.slideTimer = nil }
+                completion()
+            }
+        }
+    }
+
+    // Quadratic easing: ease-out decelerates into the peak, ease-in
+    // accelerates into the landing.
+    private static func easeOut(_ t: Double) -> Double { 1 - (1 - t) * (1 - t) }
+    private static func easeIn(_ t: Double) -> Double { t * t }
+
+    // MARK: - Arrival hop
+
+    /// Two quick springy hops in place, then `completion`.
+    private func arrivalHops(then completion: @escaping () -> Void) {
+        hop { [weak self] in
+            guard let self, !self.isDismissed else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + self.hopPause) { [weak self] in
+                guard let self, !self.isDismissed else { return }
+                self.hop { [weak self] in
+                    guard let self, !self.isDismissed else { return }
+                    completion()
+                }
+            }
+        }
+    }
+
+    /// One hop: tuck the legs (walk frame 2) and rise with ease-out, then fall
+    /// slightly faster with ease-in and plant the legs (walk frame 1). Facing is
+    /// untouched, so a left-entry (mirrored) character hops correctly too.
+    private func hop(completion: @escaping () -> Void) {
+        guard let sprite = spriteView else { completion(); return }
+        let groundY = catBottomInset
+        let peakY = groundY + hopHeight
+
+        sprite.showStaticFrame(sheet: walkSheet, index: 1) // airborne: tucked legs
+        animateY(sprite, fromY: groundY, toY: peakY, duration: hopRise, ease: Self.easeOut) { [weak self] in
+            guard let self, !self.isDismissed, let sprite = self.spriteView else { return }
+            self.animateY(sprite, fromY: peakY, toY: groundY, duration: self.hopFall, ease: Self.easeIn) { [weak self] in
+                guard let self, !self.isDismissed, let sprite = self.spriteView else { return }
+                sprite.showStaticFrame(sheet: self.walkSheet, index: 0) // grounded
+                completion()
+            }
+        }
+    }
+
     // MARK: - Facing
 
     /// While walking in, the cat faces its direction of travel: entering from
@@ -203,10 +275,19 @@ final class ReminderOverlayController: NSObject {
     // MARK: - Choreography
 
     private func didArrive() {
+        guard !isDismissed, spriteView != nil else { return }
+
+        // Two quick springy hops in place, then greet.
+        arrivalHops { [weak self] in self?.greet() }
+    }
+
+    private func greet() {
         guard !isDismissed, let bubble, let sprite = spriteView else { return }
 
-        // Stand still and blink.
-        sprite.play(sheet: idleSheet, fps: idleFPS)
+        // Stand still and blink: eyes open ~2.5s, quick ~0.2s blink.
+        sprite.playBlink(sheet: idleSheet,
+                         openDuration: idleOpenDuration,
+                         closedDuration: idleClosedDuration)
 
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.2

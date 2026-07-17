@@ -41,6 +41,39 @@ final class SpriteView: NSView {
         restartTimer()
     }
 
+    /// Stops any animation and shows a single fixed frame from `sheet`
+    /// (e.g. tucked legs while airborne during the arrival hop).
+    func showStaticFrame(sheet: SpriteSheet, index: Int) {
+        stopAnimating()
+        frames = sheet.frames
+        guard frames.indices.contains(index) else { needsDisplay = true; return }
+        frameIndex = index
+        needsDisplay = true
+    }
+
+    /// Plays a two-frame blink loop with independent hold times for the open
+    /// (frame 0) and closed (frame 1) frames — e.g. eyes open ~2.5s, then a
+    /// quick ~0.2s blink. A constant-fps loop can't express that asymmetry.
+    func playBlink(sheet: SpriteSheet, openDuration: Double, closedDuration: Double) {
+        stopAnimating()
+        frames = sheet.frames
+        frameIndex = 0
+        needsDisplay = true
+        guard frames.count >= 2 else { return }
+        scheduleBlink(open: openDuration, closed: closedDuration)
+    }
+
+    private func scheduleBlink(open: Double, closed: Double) {
+        // Hold the currently shown frame for its own duration, then flip.
+        let interval = frameIndex == 0 ? open : closed
+        animationTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { [weak self] _ in
+            guard let self, self.frames.count >= 2 else { return }
+            self.frameIndex = self.frameIndex == 0 ? 1 : 0
+            self.needsDisplay = true
+            self.scheduleBlink(open: open, closed: closed)
+        }
+    }
+
     func stopAnimating() {
         animationTimer?.invalidate()
         animationTimer = nil
