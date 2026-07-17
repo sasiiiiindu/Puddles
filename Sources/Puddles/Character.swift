@@ -38,7 +38,7 @@ struct Character: Identifiable, Equatable {
         walkFPS: 8, idleFPS: 2
     )
 
-    /// A bouncy water-droplet buddy.
+    /// A bouncy purple-bat buddy.
     static let echo = Character(
         id: "echo", displayName: "Echo",
         walkFrameCount: 4, idleFrameCount: 2,

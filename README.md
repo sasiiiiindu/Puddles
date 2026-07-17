@@ -44,7 +44,7 @@ animated at native resolution. Choose one in Preferences, or enable
 | | Character | Description |
 |---|---|---|
 | <img src="docs/puddles.gif" alt="Puddles the cat" width="96"> | **Puddles** | The original pixel cat, and the default. Curious, calm, and always a little thirsty. |
-| <img src="docs/echo.gif" alt="Echo the droplet" width="96"> | **Echo** | A bouncy blue water droplet with a spring in its step. |
+| <img src="docs/echo.gif" alt="Echo the purple bat" width="96"> | **Echo** | A bouncy purple bat with a spring in its step. |
 
 *(Character preview GIFs are placeholders — drop `docs/puddles.gif` and
 `docs/echo.gif` in to replace them.)*
@@ -127,7 +127,7 @@ brew install create-dmg   # one-time
   preview of each companion.
 - **Surprise me.** Opt in to have Puddles choose a random companion for each
   reminder instead of a fixed one.
-- **Echo, a new companion.** A bouncy blue water droplet joins Puddles the cat.
+- **Echo, a new companion.** A bouncy purple bat joins Puddles the cat.
 - **Arrival hop.** Companions now give two quick, springy hops when they arrive,
   before the speech bubble appears.
 - **Improved blink.** Idle blinking was retimed to feel more lifelike — eyes

@@ -1,6 +1,10 @@
 // Generates the Echo sprite sheets (walk.png, idle.png) as 16x16 pixel-art
 // frames, matching the Puddles cat's format: horizontal sheet, facing left.
-// Echo is a little blue water-droplet buddy.
+//
+// STALE: this generator draws the *original blue droplet* design. Echo shipped
+// as a hand-drawn purple bat instead, so the committed art in
+// Resources/Characters/echo/ was replaced by hand and does NOT come from this
+// script. Kept for reference only — do not re-run it over the shipped art.
 //
 // Usage: swift gen_echo.swift <output-dir>
 
