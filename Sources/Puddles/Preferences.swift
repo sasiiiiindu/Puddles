@@ -14,6 +14,7 @@ final class Preferences: ObservableObject {
         static let activeStart = "activeStartMinutes"
         static let activeEnd = "activeEndMinutes"
         static let sound = "soundEnabled"
+        static let character = "characterID"
     }
 
     /// Minutes between reminders (15 min … 3 hours).
@@ -29,9 +30,16 @@ final class Preferences: ObservableObject {
         didSet { defaults.set(activeEndMinutes, forKey: Key.activeEnd) }
     }
 
-    /// Play a soft sound when the cat appears.
+    /// Play a soft sound when the character appears.
     @Published var soundEnabled: Bool {
         didSet { defaults.set(soundEnabled, forKey: Key.sound) }
+    }
+
+    /// Which character walks in: a `Character.id`, or `Character.surpriseID`
+    /// to pick randomly per reminder. Resolved via `Character.resolve` each
+    /// time a reminder fires, so changes apply without restarting.
+    @Published var characterID: String {
+        didSet { defaults.set(characterID, forKey: Key.character) }
     }
 
     /// Whether the app is registered to launch at login (backed by SMAppService,
@@ -49,6 +57,7 @@ final class Preferences: ObservableObject {
         activeStartMinutes = defaults.object(forKey: Key.activeStart) as? Int ?? (9 * 60)   // 09:00
         activeEndMinutes = defaults.object(forKey: Key.activeEnd) as? Int ?? (21 * 60)       // 21:00
         soundEnabled = defaults.object(forKey: Key.sound) as? Bool ?? true
+        characterID = defaults.string(forKey: Key.character) ?? Character.puddles.id
 
         // Reflect the real login-item status without triggering a register call.
         suppressLaunchApply = true

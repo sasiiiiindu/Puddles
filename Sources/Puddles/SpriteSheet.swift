@@ -25,11 +25,14 @@ final class SpriteSheet {
         self.frames = sliced
     }
 
-    /// Load a PNG sheet bundled in `Contents/Resources/` (via build.sh).
+    /// Load a PNG sheet bundled in `Contents/Resources/` (via build.sh),
+    /// optionally inside a subdirectory (e.g. `Characters/puddles`).
     /// Returns nil if the resource is missing or can't be decoded, so callers
     /// can fall back to the placeholder.
-    static func fromResource(named name: String, frameCount: Int) -> SpriteSheet? {
-        guard let url = Bundle.main.url(forResource: name, withExtension: "png"),
+    static func fromResource(named name: String, subdirectory: String? = nil,
+                             frameCount: Int) -> SpriteSheet? {
+        guard let url = Bundle.main.url(forResource: name, withExtension: "png",
+                                        subdirectory: subdirectory),
               let data = try? Data(contentsOf: url) else { return nil }
         return SpriteSheet(pngData: data, frameCount: frameCount)
     }

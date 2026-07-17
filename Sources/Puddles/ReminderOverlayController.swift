@@ -41,7 +41,9 @@ final class ReminderOverlayController: NSObject {
     private var restX: CGFloat = 0
     private var offScreenX: CGFloat = 0
 
-    // Sprite sheets (real art from Resources/, placeholder as fallback).
+    // The character walking on screen; its sheets and frame timings drive
+    // all animation (real art from Resources/, placeholder as fallback).
+    private let character: Character
     private let walkSheet: SpriteSheet
     private let idleSheet: SpriteSheet
 
@@ -66,14 +68,13 @@ final class ReminderOverlayController: NSObject {
 
     private let walkDuration: TimeInterval = 1.5
 
-    private let walkFPS: Double = 8
-    private let idleFPS: Double = 2 // slow blink
+    private var walkFPS: Double { character.walkFPS }
+    private var idleFPS: Double { character.idleFPS }
 
-    override init() {
-        walkSheet = SpriteSheet.fromResource(named: "walk", frameCount: 4)
-            ?? SpriteSheet.placeholder(frameCount: 4, frameSize: 16)
-        idleSheet = SpriteSheet.fromResource(named: "idle", frameCount: 2)
-            ?? SpriteSheet.placeholder(frameCount: 2, frameSize: 16)
+    init(character: Character) {
+        self.character = character
+        walkSheet = character.walkSheet()
+        idleSheet = character.idleSheet()
         super.init()
     }
 

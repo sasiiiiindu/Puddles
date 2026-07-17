@@ -13,10 +13,10 @@ enum PixelFont {
     static let spacing = 1 // blank columns between glyphs
 
     /// Character that renders as the blue water droplet.
-    static let droplet: Character = "~"
+    static let droplet: Swift.Character = "~"
 
     /// Rows are top-to-bottom; "1" is a filled pixel.
-    private static let glyphs: [Character: [String]] = [
+    private static let glyphs: [Swift.Character: [String]] = [
         "A": ["010", "101", "111", "101", "101"],
         "B": ["110", "101", "110", "101", "110"],
         "C": ["011", "100", "100", "100", "011"],
@@ -65,8 +65,8 @@ enum PixelFont {
 
     private static let fallback = ["111", "101", "101", "101", "111"] // box for unknowns
 
-    static func rows(for character: Character) -> [String] {
-        let key = Character(character.uppercased())
+    static func rows(for character: Swift.Character) -> [String] {
+        let key = Swift.Character(character.uppercased())
         return glyphs[key] ?? fallback
     }
 

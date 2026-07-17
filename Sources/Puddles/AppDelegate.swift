@@ -171,7 +171,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // Only one overlay at a time — replace any that's currently on screen.
         overlay?.dismissImmediately()
 
-        let controller = ReminderOverlayController()
+        // Resolved per reminder: "Surprise me" picks randomly each time, and
+        // a changed selection applies live (no restart needed).
+        let character = Character.resolve(selectionID: prefs.characterID)
+        let controller = ReminderOverlayController(character: character)
         // Testing hooks: --demo-left / --demo-right force the entry edge.
         if CommandLine.arguments.contains("--demo-left") {
             controller.forcedSideLeft = true
@@ -201,6 +204,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             window.title = "Puddles Preferences"
             window.styleMask = [.titled, .closable, .miniaturizable]
             window.isReleasedWhenClosed = false
+            // Follow the user to whatever Space they're on — including another
+            // app's fullscreen Space. Without this, activating Puddles (an
+            // accessory app) while over a fullscreen app orders the window out
+            // on the first click instead of letting it be used.
+            window.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
             window.center()
             prefsWindow = window
         }

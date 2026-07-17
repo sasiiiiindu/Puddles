@@ -74,4 +74,10 @@ final class SpriteView: NSView {
     override func mouseDown(with event: NSEvent) {
         onClick?()
     }
+
+    /// With no click handler (e.g. the Preferences previews), stay transparent
+    /// to clicks so views underneath (the SwiftUI selection button) get them.
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        onClick == nil ? nil : super.hitTest(point)
+    }
 }

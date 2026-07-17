@@ -35,13 +35,65 @@ struct PreferencesView: View {
                     .foregroundStyle(.secondary)
             }
 
+            Section("Character") {
+                HStack(spacing: 10) {
+                    ForEach(Character.all) { character in
+                        characterCard(id: character.id, name: character.displayName) {
+                            CharacterPreviewView(character: character)
+                        }
+                    }
+                    characterCard(id: Character.surpriseID, name: "Surprise me") {
+                        Image(systemName: "shuffle")
+                            .font(.system(size: 22, weight: .medium))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Text("Surprise me picks a random character for each reminder.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Section {
-                Toggle("Play a sound when the cat appears", isOn: $prefs.soundEnabled)
+                Toggle("Play a sound when the character appears", isOn: $prefs.soundEnabled)
                 Toggle("Launch at login", isOn: $prefs.launchAtLogin)
             }
         }
         .formStyle(.grouped)
-        .frame(width: 380, height: 430)
+        .frame(width: 380, height: 560)
+    }
+
+    /// A selectable card: an (animated) preview above the character's name,
+    /// highlighted when it is the current selection.
+    private func characterCard<Preview: View>(
+        id: String, name: String, @ViewBuilder preview: () -> Preview
+    ) -> some View {
+        let isSelected = prefs.characterID == id
+        return Button {
+            prefs.characterID = id
+        } label: {
+            VStack(spacing: 6) {
+                preview()
+                    .frame(width: 48, height: 48)
+                Text(name)
+                    .font(.caption)
+                    .foregroundStyle(isSelected ? .primary : .secondary)
+            }
+            .padding(8)
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(isSelected ? Color.accentColor.opacity(0.15) : .clear)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(isSelected ? Color.accentColor : Color.secondary.opacity(0.3),
+                            lineWidth: isSelected ? 2 : 1)
+            )
+            // Transparent regions aren't hittable by default — make the whole
+            // card (padding, clear background) accept the click.
+            .contentShape(RoundedRectangle(cornerRadius: 8))
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Derived bindings & labels
@@ -74,5 +126,23 @@ struct PreferencesView: View {
                 prefs[keyPath: keyPath] = (comps.hour ?? 0) * 60 + (comps.minute ?? 0)
             }
         )
+    }
+}
+
+/// A small animated preview of a character: wraps `SpriteView` (the same
+/// pixel-perfect renderer the overlay uses) playing the walk cycle in place.
+private struct CharacterPreviewView: NSViewRepresentable {
+    let character: Character
+
+    func makeNSView(context: Context) -> SpriteView {
+        let view = SpriteView()
+        view.play(sheet: character.walkSheet(), fps: character.walkFPS)
+        return view
+    }
+
+    func updateNSView(_ nsView: SpriteView, context: Context) {}
+
+    static func dismantleNSView(_ nsView: SpriteView, coordinator: ()) {
+        nsView.stopAnimating()
     }
 }
