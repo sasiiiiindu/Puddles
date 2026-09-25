@@ -32,6 +32,21 @@ if [ -d "$SCRIPT_DIR/Resources" ]; then
     cp -R "$SCRIPT_DIR/Resources/." "$CONTENTS/Resources/"
 fi
 
+# App icon: downsample the 1024 master (art/AppIcon.png, from
+# tools/gen_app_icon.swift) into an .iconset and compile it to .icns.
+ICON_SRC="$SCRIPT_DIR/art/AppIcon.png"
+if [ -f "$ICON_SRC" ]; then
+    echo "==> Building AppIcon.icns…"
+    ICONSET="$(mktemp -d)/AppIcon.iconset"
+    mkdir -p "$ICONSET"
+    for s in 16 32 128 256 512; do
+        sips -z "$s" "$s" "$ICON_SRC" --out "$ICONSET/icon_${s}x${s}.png" >/dev/null
+        sips -z $((s * 2)) $((s * 2)) "$ICON_SRC" --out "$ICONSET/icon_${s}x${s}@2x.png" >/dev/null
+    done
+    iconutil -c icns "$ICONSET" -o "$CONTENTS/Resources/AppIcon.icns"
+    rm -rf "$(dirname "$ICONSET")"
+fi
+
 cat > "$CONTENTS/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -45,12 +60,14 @@ cat > "$CONTENTS/Info.plist" <<PLIST
     <string>$BUNDLE_ID</string>
     <key>CFBundleExecutable</key>
     <string>$APP_NAME</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleVersion</key>
-    <string>2</string>
+    <string>3</string>
     <key>CFBundleShortVersionString</key>
-    <string>2.0.0</string>
+    <string>2.1.0</string>
     <key>LSMinimumSystemVersion</key>
     <string>13.0</string>
     <key>LSUIElement</key>

@@ -90,7 +90,9 @@ open Puddles.app
 
 `build.sh` runs `swift build -c release` and assembles a proper `Puddles.app`
 bundle (with `LSUIElement` set so it stays menu-bar-only) — no `.xcodeproj`
-involved.
+involved. It also compiles `art/AppIcon.png` into the app's `AppIcon.icns` with
+`sips` + `iconutil`; swap in any 1024×1024 PNG to change the icon, or regenerate
+the default with `swift tools/gen_app_icon.swift`.
 
 ### Development flags
 
@@ -112,12 +114,18 @@ using the free [`create-dmg`](https://github.com/create-dmg/create-dmg) tool:
 
 ```bash
 brew install create-dmg   # one-time
-./release.sh 2.0.0        # produces dist/Puddles-2.0.0.dmg
+./release.sh 2.1.0        # produces dist/Puddles-2.1.0.dmg
 ```
 
 ---
 
 ## Changelog
+
+### v2.1.0
+
+- **App icon.** Puddles now has its own pixel-art icon — the cat holding a
+  glass of water, standing in a puddle — in Finder, Launchpad, and Spotlight.
+  The mounted DMG shows it too.
 
 ### v2.0.0
 
